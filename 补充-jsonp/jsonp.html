@@ -1,0 +1,53 @@
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<button id="mybtn">jsonp</button>
+	<script>
+		/*
+			jsonp原理：动态创建script标签，src属性指向没有跨域限制
+				指向一个接口，接口返回的格式一定是 ****（）  函数表达式。
+		*/
+	   
+	   function	test(obj){
+		   console.log(obj)
+	   } 
+	   
+	   function	callbackFunction(obj){
+		   console.log(obj)
+	   }
+	   
+	   var mybtn = document.getElementById('mybtn')
+	   
+	   mybtn.onclick = function(){
+		   // var oscript = document.createElement("script")
+		   // oscript.src = '01.txt' //未来地址
+		   // document.body.appendChild(oscript)
+		   
+		   var oscript = document.createElement("script")
+		   oscript.src = `https://www.runoob.com/try/ajax/jsonp.php?jsoncallback=callbackFunction` //未来地址
+		   document.body.appendChild(oscript)
+		   
+		   oscript.onload = function(){
+			   //删除当前节点
+			   oscript.remove()
+		   }
+	   }
+	   
+	   /*
+			注意：
+				1.后端接口形式必须是 ***（），需要后端配合
+				2.jsonp
+					onload 删除script标签
+					只能get请求
+	   */
+	</script>
+	
+	
+	
+</body>
+</html>

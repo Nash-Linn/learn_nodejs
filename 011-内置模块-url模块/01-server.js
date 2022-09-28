@@ -38,7 +38,7 @@ http.createServer((req,res)=>{
 var server = http.createServer()
 
 server.on("request",(req,res)=>{
-	let urlobj = url.parse(req.url,true)
+	let urlobj = url.parse(req.url,true) // 加个true 可以让query转为对象格式
 	let pathName = url.parse(req.url).pathname
 	
 	console.log('urlobj',urlobj.query)
