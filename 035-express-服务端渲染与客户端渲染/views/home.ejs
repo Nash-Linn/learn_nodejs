@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- 引入公告的头部 -->
+  <%- include("./header.ejs",{isShowTitle:true}) %> 
+
+  <h1>home</h1>
+  <ul>
+    <% for(let item of list){  %>
+      <li><%=item %></li>
+    <% } %>
+  </ul>
+
+  <div>最新消息- <%- myhtml %> </div>
+
+  <%# ejs的注释333333333 %> 
+</body>
+</html>
