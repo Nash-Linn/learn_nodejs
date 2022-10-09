@@ -53,4 +53,39 @@ router.post("/user/update/:id", (req, res) => {
     });
 });
 
+router.get("/user/delete/:id", (req, res) => {
+  UserModel.deleteOne({
+    _id: req.params.id,
+  }).then((data) => {
+    console.log(" data", data);
+    res.send({
+      ok: 1,
+    });
+  });
+});
+
+router.get("/user/list", async (req, res) => {
+  console.log("req.query", req.query);
+  const { page, limit } = req.query;
+  // UserModel.find({}, { password: 0 })
+  //   .sort({ age: 1 })
+  //   .skip((page - 1) * limit)
+  //   .limit(limit)
+  //   .then((data) => {
+  //     res.send(data);
+  //   });
+
+  let data = await UserModel.find({}, { password: 0 })
+    .sort({ age: 1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+  let total = await UserModel.find({}, { password: 0 })
+    .sort({ age: 1 })
+    .count();
+  res.send({
+    data,
+    total,
+  });
+});
+
 module.exports = router;
