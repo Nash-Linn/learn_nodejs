@@ -34,6 +34,7 @@
 
       <div>
         <ul class="page"></ul>
+        <div class="total"></div>
       </div>
     </div>
 
@@ -46,10 +47,11 @@
       let age = document.querySelector("#age")
 
 
-      let id = '63412aa8ba9625e487ff11c1'
+      let id = '6342685cc5b3375bdc3c62cb'
+      let limit = 5
 
       register_btn.onclick=()=>{
-        fetch("/api/user/add",{
+        fetch("/api/user",{
           method:"POST",
           body:JSON.stringify({
             username:username.value,
@@ -62,7 +64,7 @@
         }).then(res=>res.json())
           .then(res=>{
             console.log(res)
-            getList()
+            onload()
           })
 
       }
@@ -70,8 +72,8 @@
 
       update_btn.onclick=()=>{
 
-        fetch(`/api/user/update/${id}`,{
-          method:"POST",
+        fetch(`/api/user/${id}`,{
+          method:"PUT",
           body:JSON.stringify({
             username:"修改的名字",
             password:"修改的密码",
@@ -86,52 +88,82 @@
       }
 
       delete_btn.onclick=()=>{
-        fetch(`/api/user/delete/${id}`).then(res=>res.json())
+        fetch(`/api/user/${id}`,{
+          method:"DELETE"
+        }).then(res=>res.json())
           .then(res=>{console.log(res)})
       }
 
 
       //获取列表
-      function getList(){
-        fetch("/api/user/list?page=1&limit=2").then(res=>res.json()).then(res=>{
-        let tbody = document.querySelector("tbody")
-        tbody.innerHTML = res.data.map(item=>`
-          <tr>
-            <td>${item._id}</td>
-            <td>${item.username}</td>
-            <td>${item.age}</td>
-            <td><button id="tab_delete_btn">删除</button> </td>
-          </tr>
-        `).join("")
+      async function getList(pageNum,limit){
+        pageNum = pageNum ? pageNum :1
+        limit = limit ? limit :5
 
-        let page  = document.querySelector(".page")
+        await fetch(`/api/user/list?page=${pageNum}&limit=${limit}`).then(res=>res.json()).then(res=>{
+          let tbody = document.querySelector("tbody")
+          tbody.innerHTML = res.data.map(item=>`
+            <tr>
+              <td>${item._id}</td>
+              <td>${item.username}</td>
+              <td>${item.age}</td>
+              <td><button id="tab_delete_btn">删除</button> </td>
+            </tr>
+          `).join("")
 
-        let pageInner = []
-        for(let i = 0;i<res.total;i++){
-            let temp  = `
-              <li>
-              ${i}
-              </li>
-            `
-          pageInner.push(temp)
-        }
-        page.innerHTML =pageInner.join("")
+          let page  = document.querySelector(".page")
+
+          let pageInner = []
+
+          
+         
+
+          for(let i = 0;i < res.total  / limit ; i++){
+              let temp  = `
+                <li class="pageItem">
+                ${i+1}
+                </li>
+              `
+            pageInner.push(temp)
+          }
+          page.innerHTML =pageInner.join("")
+
+          let total  = document.querySelector(".total")
+          total.innerHTML = `<span>共${res.total}条  ${limit}条/页  当前第${pageNum}页</span>`
+          
+          let pageItem = document.querySelectorAll(".pageItem")
+        
+          for(let i in pageItem){
+            pageItem[i].onclick = async()=>{
+              await getList( Number(i)+1,limit)
+            }
+          }
+     
 
           let tab_delete_btn = document.querySelectorAll("#tab_delete_btn")
+
+
           for(let i in res.data){
             tab_delete_btn[i].onclick= () =>{
-              fetch(`/api/user/delete/${res.data[i]._id}`).then(res=>res.json())
+              fetch(`/api/user/${res.data[i]._id}`,{
+                method:"DELETE"
+              }).then(res=>res.json())
               .then(res=>{
                 console.log(res)
-                getList()
+                onload()
               })
             }
           }
+          
         })
       }
      
-
-      getList()
+      async function onload (){
+        await  getList()
+       
+      }
+      
+      onload()
     </script>
   </body>
 </html>
@@ -139,6 +171,7 @@
   .page{
     display: flex;
     list-style-type: none;
+    padding-left: 0;
   }
   .page li{
     padding:10px;

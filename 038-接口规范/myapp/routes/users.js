@@ -7,13 +7,9 @@ router.get("/", function (req, res, next) {
   res.send("respond with a resource");
 });
 
-router.post("/user/add", (req, res) => {
+//响应前端post请求
+router.post("/user", (req, res) => {
   console.log("req.body", req.body);
-
-  //插入数据库
-  //1.创建一个模型（user,限制file类型），————对应数据库的集合（users）
-  //user.create  user.find  user.delect user.update
-
   const { username, password, age } = req.body;
   UserModel.create({
     username,
@@ -27,8 +23,9 @@ router.post("/user/add", (req, res) => {
   });
 });
 
+//响应前端put请求
 //动态路由，获取id
-router.post("/user/update/:id", (req, res) => {
+router.put("/user/:id", (req, res) => {
   const { username, password, age } = req.body;
   //第一项是匹配的字段  第二项是要更新的内容
   UserModel.updateOne(
@@ -53,7 +50,8 @@ router.post("/user/update/:id", (req, res) => {
     });
 });
 
-router.get("/user/delete/:id", (req, res) => {
+//响应前端delete请求
+router.delete("/user/:id", (req, res) => {
   UserModel.deleteOne({
     _id: req.params.id,
   }).then((data) => {
