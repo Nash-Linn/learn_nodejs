@@ -11,6 +11,7 @@ var MongoStore = require("connect-mongo");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var loginRouter = require("./routes/login");
+const JWT = require("./util/JWT");
 
 var app = express();
 
@@ -24,32 +25,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-//使用注册express-session中间件
-app.use(
-  session({
-    //session名字
-    name: "system-token",
-    //密钥
-    secret: "mySystemSecret",
-    cookie: {
-      //过期时间
-      maxAge: 1000 * 60 * 60,
-      secure: false, //为true时候表示只有https协议才能访问cookie
-    },
-
-    resave: "true", //重新设置session后,会自动重新计算过期时间
-    //为true 一开始就会给一个无效cookie
-    saveUninitialized: true,
-
-    rolling: true, //为true表示超时前刷新，cookie会重新计时；
-    //为false表示在超时前刷新多少次，都是按照第一次刷新开始计时
-    store: MongoStore.create({
-      mongoUrl: "mongodb://127.0.0.1:27017/sys_session",
-      ttl: 1000 * 60 * 10,
-    }),
-  })
-);
-
 //设置中间件--session过期校验
 app.use((req, res, next) => {
   //排除login 相关的路由和接口
@@ -57,17 +32,32 @@ app.use((req, res, next) => {
     next();
     return;
   }
-  if (req.session.user) {
-    //在过期时间内访问过接口 过期时间重新计算
-    //重新设置session
-    req.session.date = Date.now();
-    next();
+
+  const token =
+    req.headers["authorization"] && req.headers["authorization"].split(" ")[1];
+
+  if (token) {
+    const payload = JWT.verify(token);
+    if (payload) {
+      console.log("payload", payload);
+      //重新计算token过期时间
+      const newToken = JWT.generate(
+        {
+          id: payload.id,
+          username: payload.username,
+        },
+        "10h"
+      );
+      res.header("Authorization", newToken);
+      next();
+    } else {
+      res.status(401).send({
+        errCode: -1,
+        errInfo: "token过期",
+      });
+    }
   } else {
-    //是接口,返回 错误码
-    //不是接口,就重定向
-    req.url.includes("api")
-      ? res.status(401).send({ ok: 0, code: 401 })
-      : res.redirect("/login");
+    next();
   }
 });
 

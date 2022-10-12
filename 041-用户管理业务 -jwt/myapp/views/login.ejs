@@ -14,30 +14,43 @@
     <div><button id="login_btn">登录</button></div>
   </div>
 
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
+    //拦截器
+    axios.interceptors.request.use(function (config) {
+  
+      return config;
+    }, function (error) {
+      return Promise.reject(error);
+    });
+
+    axios.interceptors.response.use(function (response) {
+      const {authorization } = response.headers
+      console.log('authorization',authorization)
+      authorization && localStorage.setItem("token",authorization)
+      return response;
+    }, function (error) {
+      return Promise.reject(error);
+    });
+  </script>
+  <script>
+    
       let username = document.querySelector("#username")
       let password = document.querySelector("#password")
       let login_btn = document.querySelector("#login_btn")
 
       login_btn.onclick=()=>{
-        fetch("/api/login",{
-          method:"POST",
-          body:JSON.stringify({
+          axios.post("/api/login",{
             username:username.value,
             password:password.value,
-          }),
-          headers:{
-            "Content-Type":"application/json"
-          }
-        }).then(res=>res.json())
-          .then(res=>{
-            if(res.ok == 1){
+          }).then(res=>{
+             console.log('res.data', res)
+            if(res.data.ok == 1){
               location.href="/"
             }else{
               alert("用户名密码不匹配")
             }
           })
-
       }
   </script>
 </body>

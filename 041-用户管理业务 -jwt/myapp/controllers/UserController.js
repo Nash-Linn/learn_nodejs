@@ -1,6 +1,7 @@
 // MVC  C层 获取参数和发送数据
 
 const UserService = require("../services/UserService");
+const JWT = require("../util/JWT");
 
 const UserController = {
   addUser: async (req, res) => {
@@ -35,9 +36,15 @@ const UserController = {
     if (data.length == 0) {
       res.send({ ok: 0 });
     } else {
-      //设置session
-      req.session.user = data[0]; //设置session对象
-      //默认存在内存中
+      //设置token
+      const token = JWT.generate(
+        {
+          id: data[0]._id,
+          username: data[0].username,
+        },
+        "1h"
+      );
+      res.header("Authorization", token);
       res.send({ ok: 1 });
     }
   },
