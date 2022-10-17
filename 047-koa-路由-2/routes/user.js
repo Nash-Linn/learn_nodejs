@@ -1,18 +1,44 @@
 const Router = require("koa-router");
 const router = new Router();
 
-router.get("/user", (ctx, next) => {
+// router.get("/user", (ctx, next) => {
+//   ctx.body = [111, 222, 333];
+// });
+
+// router.post("/user", (ctx, next) => {
+//   ctx.body = {
+//     ok: 1,
+//     info: "add user success",
+//   };
+// });
+
+// router.put("/user/:id", (ctx, next) => {
+//   console.log("ctx.params", ctx.params);
+//   ctx.body = {
+//     ok: 1,
+//     info: "put user success",
+//   };
+// });
+
+// router.delete("/user/:id", (ctx, next) => {
+//   ctx.body = {
+//     ok: 1,
+//     info: "delete user success",
+//   };
+// });
+
+router.get("/", (ctx, next) => {
   ctx.body = [111, 222, 333];
 });
 
-router.post("/user", (ctx, next) => {
+router.post("/", (ctx, next) => {
   ctx.body = {
     ok: 1,
     info: "add user success",
   };
 });
 
-router.put("/user/:id", (ctx, next) => {
+router.put("/:id", (ctx, next) => {
   console.log("ctx.params", ctx.params);
   ctx.body = {
     ok: 1,
@@ -20,7 +46,7 @@ router.put("/user/:id", (ctx, next) => {
   };
 });
 
-router.delete("/user/:id", (ctx, next) => {
+router.delete("/:id", (ctx, next) => {
   ctx.body = {
     ok: 1,
     info: "delete user success",
