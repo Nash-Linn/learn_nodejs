@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>登录页面</h1>
+  <div>
+    <div>用户名：<input id="username" type="text"></div>
+    <div>密码：<input id="password" type="password"></div>
+    <div><button id="login_btn">登录</button></div>
+  </div>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    //拦截器
+    axios.interceptors.request.use(function (config) {
+  
+      return config;
+    }, function (error) {
+      return Promise.reject(error);
+    });
+
+    axios.interceptors.response.use(function (response) {
+      const {authorization } = response.headers
+      console.log('authorization',authorization)
+      authorization && localStorage.setItem("token",authorization)
+      return response;
+    }, function (error) {
+      return Promise.reject(error);
+    });
+  </script>
+  <script>
+    
+      let username = document.querySelector("#username")
+      let password = document.querySelector("#password")
+      let login_btn = document.querySelector("#login_btn")
+
+      login_btn.onclick=()=>{
+          axios.post("/api/login",{
+            username:username.value,
+            password:password.value,
+          }).then(res=>{
+             console.log('res.data', res)
+            if(res.data.ok == 1){
+              location.href="/"
+            }else{
+              alert("用户名密码不匹配")
+            }
+          })
+      }
+  </script>
+</body>
+</html>
