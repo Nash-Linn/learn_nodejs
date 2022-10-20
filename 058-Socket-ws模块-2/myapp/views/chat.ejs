@@ -9,8 +9,18 @@
 <body>
     <h1>Chat</h1>
 
+    <input type="text" id="text">
+    <button id="send">send</button>
+
+    <select  id="select"></select>
     <!-- 建立socket连接 带着token，后端验证 -->
   <script>
+    let select = document.querySelector("#select")
+    let text = document.querySelector("#text")
+    let send = document.querySelector("#send")
+
+
+
     const WebSocketType = {
       Error: 0, //错误
       GroupList: 1,
@@ -25,16 +35,57 @@
     }
     ws.onmessage = (msg)=>{
       const msgObj = JSON.parse(msg.data)
+      let username
+      let msgData
       switch(msgObj.type){
+      
         case WebSocketType.Error:
             localStorage.removeItem("token")
             location.href = "/"
           break
-        case WebSocketType.GroupChat:
-          console.log(msgObj)
+        case WebSocketType.GroupList:
+          let onlineList = JSON.parse(msgObj.data)
+          select.innerHTML = ""
+          select.innerHTML =` <option value = "all">all</option>`+ onlineList.map(item=>`
+            <option value="${item.username}">${item.username}</option>
+          `).join("")
           break
+        case WebSocketType.GroupChat:
+          username = msgObj.user.username ? msgObj.user.username : "广播" 
+          msgData =  msgObj.data
+          console.log(username + ":"+msgData)
+          break
+        case WebSocketType.SingleChat:
+          username = msgObj.user.username ? msgObj.user.username : "广播" 
+          msgData =  msgObj.data
+          console.log(username + ":"+msgData)
+        break
       }
     }
+
+
+    send.onclick = ()=>{
+      if(select.value =="all"){
+        // console.log('群发')
+        ws.send(createMessage(
+          WebSocketType.GroupChat,text.value
+        ))
+      }else{
+        // console.log('私聊')
+        ws.send(createMessage(
+          WebSocketType.SingleChat ,text.value,select.value
+        ))
+      }
+    }
+
+
+  function createMessage(type,data,to) {
+    return JSON.stringify({
+      type,
+      data,
+      to
+  });
+}
   </script>
 </body>
 </html>

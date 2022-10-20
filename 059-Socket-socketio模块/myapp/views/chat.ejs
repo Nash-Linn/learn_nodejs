@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+    <h1>Chat</h1>
+    <h1>当前用户：
+      <b id="user"></b>
+    </h1>
+    <input type="text" id="text">
+    <button id="send">send</button>
+
+    <select  id="select"></select>
+    <!-- 建立socket连接 带着token，后端验证 -->
+  
+  <script src="/javascripts/socket.io.min.js"></script>
+  <script>
+    let select = document.querySelector("#select")
+    let text = document.querySelector("#text")
+    let send = document.querySelector("#send")
+    var user = document.querySelector("#user")
+    user.innerHTML = localStorage.getItem("username")
+
+    const WebSocketType = {
+      Error: 0, //错误
+      GroupList: 1,
+      GroupChat: 2,
+      SingleChat: 3,
+    };
+
+    //引入 io js端
+    const socket = io(`ws://localhost:3000?token=${localStorage.getItem("token")}`);
+    
+    let username
+    let msgData
+    socket.on( WebSocketType.GroupChat,(msgObj)=>{
+      username = msgObj.user.username ? msgObj.user.username : "广播" 
+      msgData =  msgObj.data
+      console.log(username + ":"+msgData)
+    })
+
+    socket.on( WebSocketType.GroupList ,(msgObj)=>{
+      let onlineList = msgObj.data
+        select.innerHTML = ""
+        select.innerHTML =` <option value = "all">all</option>`+ onlineList.map(item=>`
+          <option value="${item.username}">${item.username}</option>
+        `).join("")
+    })
+
+
+    socket.on( WebSocketType.Error ,(msgObj)=>{
+      localStorage.removeItem("token")
+      location.href = "/login"
+    })
+
+
+
+    send.onclick = ()=>{
+      if(select.value =="all"){
+        // console.log('群发')
+        socket.emit(WebSocketType.GroupChat,createMessage(text.value))
+      }else{
+        // console.log('私聊')
+        socket.emit(WebSocketType.SingleChat,createMessage(text.value,select.value))
+       
+      }
+    }
+
+
+  function createMessage(data,to) {
+    return JSON.stringify({
+      data,
+      to
+  });
+}
+  </script>
+</body>
+</html>

@@ -14,6 +14,9 @@ wss.on("connection", function connection(ws, req) {
       createMessage(WebSocketType.GroupChat, payload.username, "欢迎来到聊天室")
     );
     ws.user = payload;
+
+    //群发告知在线列表
+    sendAll();
   } else {
     ws.send(WebSocketType.Error, null, "token过期");
   }
@@ -27,8 +30,6 @@ wss.on("connection", function connection(ws, req) {
     // });
 
     const msgObj = JSON.parse(data);
-    console.log("msgObj", msgObj);
-
     switch (msgObj.type) {
       case WebSocketType.GroupList:
         ws.send(
@@ -40,10 +41,35 @@ wss.on("connection", function connection(ws, req) {
         );
         break;
       case WebSocketType.GroupChat:
+        console.log("msgObj", msgObj);
+        wss.clients.forEach(function each(client) {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(
+              createMessage(WebSocketType.GroupChat, ws.user, msgObj.data),
+              { binary: false }
+            );
+          }
+        });
         break;
       case WebSocketType.SingleChat:
+        wss.clients.forEach(function each(client) {
+          console.log("msgObj.to", msgObj.to);
+          if (
+            client.user.username === msgObj.to &&
+            client.readyState === WebSocket.OPEN
+          ) {
+            client.send(
+              createMessage(WebSocketType.SingleChat, ws.user, msgObj.data),
+              { binary: false }
+            );
+          }
+        });
         break;
     }
+  });
+  ws.on("close", () => {
+    wss.clients.delete(ws.user);
+    sendAll();
   });
 });
 
@@ -59,5 +85,20 @@ function createMessage(type, user, data) {
     type,
     user,
     data,
+  });
+}
+
+function sendAll() {
+  //转发给其他人
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(
+        createMessage(
+          WebSocketType.GroupList,
+          null,
+          JSON.stringify(Array.from(wss.clients).map((item) => item.user))
+        )
+      );
+    }
   });
 }
