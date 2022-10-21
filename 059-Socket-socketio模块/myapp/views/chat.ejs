@@ -52,6 +52,12 @@
     })
 
 
+    socket.on( WebSocketType.SingleChat,(msgObj)=>{
+      username = msgObj.user.username ? msgObj.user.username : "广播" 
+      msgData =  msgObj.data
+      console.log(username + ":"+msgData)
+    })
+
     socket.on( WebSocketType.Error ,(msgObj)=>{
       localStorage.removeItem("token")
       location.href = "/login"
@@ -72,10 +78,10 @@
 
 
   function createMessage(data,to) {
-    return JSON.stringify({
+    return {
       data,
       to
-  });
+    } 
 }
   </script>
 </body>

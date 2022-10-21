@@ -25,11 +25,20 @@ function start(server) {
       //给除了自己的人发
       socket.broadcast.emit(
         WebSocketType.GroupChat,
-        createMessage(socket.user, msg)
+        createMessage(socket.user, msg.data)
       );
     });
 
-    socket.on(WebSocketType.SingleChat, () => {});
+    socket.on(WebSocketType.SingleChat, (msgObj) => {
+      Array.from(io.sockets.sockets).forEach((item) => {
+        if (item[1].user.username == msgObj.to) {
+          item[1].emit(
+            WebSocketType.SingleChat,
+            createMessage(item[1].user, msgObj.data)
+          );
+        }
+      });
+    });
 
     socket.on("disconnect", () => {
       sendAll(io);
