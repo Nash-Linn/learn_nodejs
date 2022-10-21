@@ -65,7 +65,9 @@ function sendAll(io) {
     WebSocketType.GroupList,
     createMessage(
       null,
-      Array.from(io.sockets.sockets).map((item) => item[1].user)
+      Array.from(io.sockets.sockets)
+        .map((item) => item[1].user)
+        .filter((item) => item)
     )
   );
 }
